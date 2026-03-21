@@ -7,7 +7,10 @@ It is intentionally small and modular:
 - `src/chord_grouping.py` groups near-simultaneous onsets into deterministic chord groups.
 - `src/hand_inference.py` applies a replaceable RH/LH heuristic.
 - `src/exporter.py` builds and writes the final JSON payload.
-- `src/main.py` exposes the CLI entrypoint.
+- `src/quantizer.py` maps stage-one JSON onto a fixed time grid for aligned rendering.
+- `src/renderer.py` renders aligned ASCII output from the fixed grid.
+- `src/html_renderer.py` renders the same layout as monospaced HTML with octave colors.
+- `src/main.py` exposes both the MIDI-to-JSON CLI and the JSON-to-annotation CLI.
 
 ## Requirements
 
@@ -41,6 +44,31 @@ To disable pretty formatting or metadata:
 
 ```bash
 python -m src.main inputs/Mariage.MID --output outputs/mariage.json --no-pretty --no-include-metadata
+```
+
+## Render JSON to ASCII and HTML
+
+The second stage consumes the stage-one JSON and renders it on a shared fixed time grid. Both hands use the same quantized columns, and each logical column is padded to the widest token across RH and LH before serialization. This keeps the output visually aligned even when one hand has a long chord label and the other has a single note or a dash.
+
+```bash
+python -m src.main outputs/mariage.json --ascii outputs/mariage.txt --html outputs/mariage.html
+```
+
+Optional renderer flags:
+
+```bash
+python -m src.main outputs/mariage.json \
+  --ascii outputs/mariage.txt \
+  --html outputs/mariage.html \
+  --time-step 0.05 \
+  --system-width 50
+```
+
+ASCII output uses wrapped systems like:
+
+```text
+RH:|f--------f--d#-----|
+LH:|g#d#f#----c#----g#c|
 ```
 
 ## JSON shape
