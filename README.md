@@ -50,6 +50,8 @@ python -m src.main inputs/Mariage.MID --output outputs/mariage.json --no-pretty 
 
 The second stage consumes the stage-one JSON and renders it on a shared fixed time grid. Both hands use the same quantized columns, and each logical column is padded to the widest token across RH and LH before serialization. This keeps the output visually aligned even when one hand has a long chord label and the other has a single note or a dash.
 
+The renderer also applies a small layout compaction pass inside each wrapped system: fully empty leading or interior runs lose exactly one dash in total while RH and LH still share the same column widths. Each LH line ends with the elapsed time covered by that wrapped block, formatted as `m:ss`.
+
 ```bash
 python -m src.main outputs/mariage.json --ascii outputs/mariage.txt --html outputs/mariage.html
 ```
@@ -67,8 +69,8 @@ python -m src.main outputs/mariage.json \
 ASCII output uses wrapped systems like:
 
 ```text
-RH:|f--------f--d#-----|
-LH:|g#d#f#----c#----g#c|
+RH:|f-------f--d#----|
+LH:|g#d#f#---c#---g#c| 0:00
 ```
 
 ## JSON shape

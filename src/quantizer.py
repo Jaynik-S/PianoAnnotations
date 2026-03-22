@@ -42,6 +42,7 @@ class QuantizedScore:
 
     source_path: str
     metadata: dict[str, Any]
+    time_step_sec: float
     notes: list[RenderNote]
     rh_columns: dict[int, list[RenderNote]]
     lh_columns: dict[int, list[RenderNote]]
@@ -100,6 +101,7 @@ def quantize_note_events(
     return QuantizedScore(
         source_path=source_path,
         metadata=dict(payload.get("metadata", {})),
+        time_step_sec=time_step_sec,
         notes=sorted(quantized_notes, key=lambda note: (note.column_index, note.pitch_midi, note.id)),
         rh_columns=rh_columns,
         lh_columns=lh_columns,
