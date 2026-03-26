@@ -173,13 +173,3 @@ def _write_text_output(path: str | Path, content: str) -> None:
 if __name__ == "__main__":
     sys.exit(main())
 
-
-
-'''
-STEP 1:
-python -m src.main inputs/Mariage.MID --output outputs/mariage.json
-
-
-STEP 2:
-python -m src.main outputs/lalaland.json --ascii outputs/lalaland.txt --html outputs/lalaland.html
-'''
