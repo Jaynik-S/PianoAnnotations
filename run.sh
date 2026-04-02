@@ -5,13 +5,24 @@ set -euo pipefail
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$script_dir"
 
-if [[ $# -ne 1 ]]; then
-  echo "Usage: $0 <name>"
+if [[ $# -lt 1 || $# -gt 2 ]]; then
+  echo "Usage: $0 <name> [-N]"
   echo "Example: $0 lalaland"
+  echo "Example: $0 lalaland -2"
   exit 1
 fi
 
 name="$1"
+spacing_reduction="0"
+if [[ $# -eq 2 ]]; then
+  if [[ "$2" =~ ^-[0-9]+$ ]]; then
+    spacing_reduction="${2#-}"
+  else
+    echo "Invalid spacing reduction '$2'. Expected a dash-prefixed non-negative integer like -2."
+    exit 1
+  fi
+fi
+
 name="${name%.mid}"
 name="${name%.MID}"
 name="${name%.midi}"
@@ -67,7 +78,11 @@ python_ascii_output="$(normalize_path_for_python "$ascii_output")"
 python_html_output="$(normalize_path_for_python "$html_output")"
 
 "$python_cmd" -m src.main "$python_input_path" --output "$python_json_output"
-"$python_cmd" -m src.main "$python_json_output" --ascii "$python_ascii_output" --html "$python_html_output"
+"$python_cmd" -m src.main \
+  "$python_json_output" \
+  --ascii "$python_ascii_output" \
+  --html "$python_html_output" \
+  --spacing-reduction "$spacing_reduction"
 
 echo "Generated:"
 echo "  $json_output"

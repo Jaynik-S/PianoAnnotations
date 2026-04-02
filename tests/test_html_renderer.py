@@ -39,3 +39,20 @@ def test_render_html_inserts_exactly_one_blank_line_between_systems() -> None:
     html = render_html(score, system_width=50)
 
     assert html.count("&#8203;") == 1
+
+
+def test_render_html_spacing_reduction_matches_shared_layout_compaction() -> None:
+    payload = {
+        "notes": [
+            {"id": 0, "pitch_name": "C4", "pitch_midi": 60, "start_sec": 0.0, "hand": "RH", "chord_id": 0},
+            {"id": 1, "pitch_name": "D4", "pitch_midi": 62, "start_sec": 0.15, "hand": "RH", "chord_id": 1},
+        ]
+    }
+
+    score = quantize_note_events(payload, time_step_sec=0.05)
+    default_html = render_html(score, system_width=10)
+    compact_html = render_html(score, system_width=10, spacing_reduction=1)
+
+    assert "</span>-<span" in default_html
+    assert "</span><span" in compact_html
+    assert "| 0:00</div>" in compact_html

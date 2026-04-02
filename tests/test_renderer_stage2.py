@@ -33,6 +33,19 @@ def test_render_ascii_keeps_rh_and_lh_content_lengths_equal() -> None:
     assert lh_line == "LH:|g#d#f#---c#---g#c| 0:00"
 
 
+def test_render_ascii_spacing_reduction_preserves_alignment() -> None:
+    score = quantize_note_events(alignment_payload(), time_step_sec=0.05)
+
+    output = render_ascii(score, system_width=10, spacing_reduction=2)
+    rh_line, lh_line = output.splitlines()
+
+    rh_body = rh_line[len("RH:|") : -1]
+    lh_body = lh_line[len("LH:|") : lh_line.index("| 0:00")]
+    assert len(rh_body) == len(lh_body)
+    assert rh_line == "RH:|f-----f--d#---|"
+    assert lh_line == "LH:|g#d#f#-c#--g#c| 0:00"
+
+
 def test_render_ascii_sorts_same_hand_chords_low_to_high() -> None:
     payload = {
         "notes": [
@@ -46,6 +59,20 @@ def test_render_ascii_sorts_same_hand_chords_low_to_high() -> None:
     output = render_ascii(score, system_width=10)
 
     assert output == "RH:|cf#g|\nLH:|----| 0:00"
+
+
+def test_render_ascii_spacing_reduction_can_collapse_small_gap_to_zero() -> None:
+    payload = {
+        "notes": [
+            {"id": 0, "pitch_name": "C4", "pitch_midi": 60, "start_sec": 0.0, "hand": "RH", "chord_id": 0},
+            {"id": 1, "pitch_name": "D4", "pitch_midi": 62, "start_sec": 0.15, "hand": "RH", "chord_id": 1},
+        ]
+    }
+
+    score = quantize_note_events(payload, time_step_sec=0.05)
+
+    assert render_ascii(score, system_width=10) == "RH:|c-d|\nLH:|---| 0:00"
+    assert render_ascii(score, system_width=10, spacing_reduction=1) == "RH:|cd|\nLH:|--| 0:00"
 
 
 def test_render_ascii_wraps_after_50_columns_and_clamps_final_timestamp() -> None:
@@ -66,6 +93,28 @@ def test_render_ascii_wraps_after_50_columns_and_clamps_final_timestamp() -> Non
     assert blocks[0].splitlines()[1].endswith(" 0:02")
     assert blocks[1].startswith("RH:|---------d|")
     assert blocks[1].splitlines()[1].endswith(" 0:03")
+
+
+def test_render_ascii_spacing_reduction_does_not_change_wrapping_or_timestamps() -> None:
+    payload = {
+        "metadata": {"duration_sec": 3.0},
+        "notes": [
+            {"id": 0, "pitch_name": "C4", "pitch_midi": 60, "start_sec": 0.0, "hand": "RH", "chord_id": 0},
+            {"id": 1, "pitch_name": "D4", "pitch_midi": 62, "start_sec": 3.0, "hand": "RH", "chord_id": 1},
+        ]
+    }
+
+    score = quantize_note_events(payload, time_step_sec=0.05)
+    default_output = render_ascii(score, system_width=50)
+    compact_output = render_ascii(score, system_width=50, spacing_reduction=2)
+
+    default_blocks = default_output.split("\n\n")
+    compact_blocks = compact_output.split("\n\n")
+    assert len(default_blocks) == len(compact_blocks) == 2
+    assert default_blocks[0].splitlines()[1].endswith(" 0:02")
+    assert compact_blocks[0].splitlines()[1].endswith(" 0:02")
+    assert default_blocks[1].splitlines()[1].endswith(" 0:03")
+    assert compact_blocks[1].splitlines()[1].endswith(" 0:03")
 
 
 def test_render_ascii_compacts_leading_empty_run() -> None:
