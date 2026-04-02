@@ -27,6 +27,28 @@ python -m src.main inputs/Mariage.MID --output outputs/mariage.json
 python -m src.main outputs/mariage.json --ascii outputs/mariage.txt --html outputs/mariage.html
 ```
 
+## Sample run with `run.sh`
+
+If your MIDI file is at `inputs/Mariage.MID`, you can run the full pipeline with:
+
+```bash
+bash ./run.sh Mariage
+```
+
+This will generate:
+
+```text
+outputs/Mariage.json
+outputs/Mariage.txt
+outputs/Mariage.html
+```
+
+You can also pass an optional spacing reduction value for tighter rendered output:
+
+```bash
+bash ./run.sh Mariage -2
+```
+
 Example ASCII system:
 
 ```text
